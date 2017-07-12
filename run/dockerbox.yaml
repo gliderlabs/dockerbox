@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dockerbox
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: dockerbox
+    spec:
+      dnsPolicy: Default
+      volumes:
+        - name: dockerbox
+          hostPath:
+            path: /var/lib/dockerbox
+      containers:
+        - name: dockerbox
+          image: gliderlabs/dockerbox:latest
+          securityContext:
+            privileged: true
+          ports:
+            - name: http
+              containerPort: 2375
+          volumeMounts:
+            - mountPath: /var/lib/ignore
+              name: dockerbox
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: dockerbox
+spec:
+  clusterIP: None
+  selector:
+    app: dockerbox
+  ports:
+    - name: http
+      targetPort: http
+      port: 2375
