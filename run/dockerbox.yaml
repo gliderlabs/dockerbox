@@ -1,9 +1,8 @@
 apiVersion: extensions/v1beta1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: dockerbox
 spec:
-  replicas: 2
   template:
     metadata:
       labels:
@@ -12,18 +11,21 @@ spec:
       dnsPolicy: Default
       volumes:
         - name: dockerbox
-          hostPath:
-            path: /var/lib/dockerbox
+          emptyDir: {}
       containers:
         - name: dockerbox
           image: gliderlabs/dockerbox:latest
           securityContext:
             privileged: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
           ports:
             - name: http
               containerPort: 2375
           volumeMounts:
-            - mountPath: /var/lib/ignore
+            - mountPath: /var/lib/docker
               name: dockerbox
 ---
 kind: Service
